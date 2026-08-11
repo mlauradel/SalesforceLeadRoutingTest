@@ -1,402 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lead Flow Sandbox</title>
-<style>
-  :root{
-    --ink:#2b2b2b;
-    --paper:#faf8f3;
-    --card:#ffffff;
-    --line:#d8d3c7;
-    --purple:#7c6fd6;
-    --purple-bg:#f1efff;
-    --orange:#c8912f;
-    --orange-bg:#fbf1dd;
-    --blue:#3f7fb0;
-    --blue-bg:#eaf3fa;
-    --green:#4f9d6e;
-    --green-bg:#eef8f1;
-    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    font-family:var(--sans);
-    background:var(--paper);
-    color:var(--ink);
-    padding:32px 16px 80px;
-  }
-  .wrap{max-width:640px;margin:0 auto;}
-  h1{
-    font-size:1.4rem;
-    margin:0 0 4px;
-    letter-spacing:-0.01em;
-  }
-  .sub{
-    font-family:var(--mono);
-    font-size:0.8rem;
-    color:#8a8478;
-    margin:0 0 32px;
-  }
-  .stage{
-    position:relative;
-    border-radius:10px;
-    border:1.5px solid var(--line);
-    background:var(--card);
-    padding:20px 20px 22px;
-    margin-bottom:0;
-    opacity:0.35;
-    filter:grayscale(0.6);
-    transition:opacity 0.4s ease, filter 0.4s ease;
-  }
-  .stage.active{opacity:1;filter:none;}
-  .stage.done{opacity:1;filter:none;}
-  .arrow{
-    text-align:center;
-    color:#b7b0a0;
-    font-size:1.1rem;
-    line-height:1;
-    padding:10px 0;
-  }
-  .stage-label{
-    font-family:var(--mono);
-    font-size:0.7rem;
-    text-transform:uppercase;
-    letter-spacing:0.08em;
-    color:#9a9384;
-    margin-bottom:10px;
-  }
-  .stage h2{
-    font-size:1.05rem;
-    margin:0 0 14px;
-  }
-  .grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px 12px;
-  }
-  .field{display:flex;flex-direction:column;gap:4px;}
-  .field.full{grid-column:1 / -1;}
-  label{font-size:0.78rem;color:#6b6558;font-weight:600;}
-  input[type=text], input[type=email], input[type=tel], input[type=number], textarea, select{
-    font-family:var(--sans);
-    font-size:0.88rem;
-    padding:8px 10px;
-    border:1px solid var(--line);
-    border-radius:6px;
-    background:#fffefb;
-    color:var(--ink);
-  }
-  input:focus, textarea:focus, select:focus{
-    outline:2px solid var(--blue);
-    outline-offset:1px;
-  }
-  textarea{resize:vertical;min-height:44px;}
-  .checkrow{display:flex;align-items:center;gap:8px;font-size:0.85rem;padding-top:22px;}
-  .checkrow input{width:16px;height:16px;}
-  button{
-    font-family:var(--sans);
-    font-size:0.88rem;
-    font-weight:600;
-    padding:10px 18px;
-    border-radius:6px;
-    border:none;
-    background:var(--ink);
-    color:var(--paper);
-    cursor:pointer;
-    margin-top:16px;
-  }
-  button:hover{opacity:0.88;}
-  button:disabled{background:#c8c2b4;cursor:not-allowed;}
-  .record{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-    margin-top:4px;
-  }
-  .record-block{
-    border-radius:8px;
-    padding:12px 14px;
-    font-family:var(--mono);
-    font-size:0.78rem;
-    line-height:1.6;
-  }
-  .record-block.entered{background:var(--orange-bg);border:1px solid #e3c98a;}
-  .record-block.auto{background:var(--blue-bg);border:1px solid #b7d3e6;}
-  .record-block.enriched{background:var(--orange-bg);border:1px solid #e3c98a;}
-  .record-block.icp{background:var(--green-bg);border:1px solid #a9d6b9;}
-  .record-block .k{color:#79746a;}
-  .record-block div{margin-bottom:2px;word-break:break-word;}
-  .lead-shell{
-    border:1.5px solid var(--purple);
-    background:var(--purple-bg);
-    border-radius:8px;
-    padding:14px;
-  }
-  .lead-shell .rec-title{
-    font-size:0.75rem;
-    font-weight:700;
-    color:#5c50a8;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    margin-bottom:10px;
-  }
-  .tier-outcome{
-    display:none;
-    margin-top:16px;
-    border-radius:8px;
-    padding:14px 16px;
-    font-family:var(--mono);
-    font-size:0.85rem;
-    border:1.5px solid;
-  }
-  .tier-outcome.show{display:block;}
-  .tier-outcome .row{display:flex;justify-content:space-between;margin-top:4px;}
-  .tier-outcome .row .k{color:#79746a;}
-  .t1{background:var(--green-bg);border-color:#a9d6b9;}
-  .t2{background:var(--orange-bg);border-color:#e3c98a;}
-  .t3{background:#fbeaea;border-color:#e6b2b2;}
-  .reset{
-    display:block;
-    margin:36px auto 0;
-    background:none;
-    color:#8a8478;
-    border:1px solid var(--line);
-    font-weight:500;
-  }
-  .hint{font-size:0.78rem;color:#9a9384;margin-top:8px;}
-  @media (max-width:480px){
-    .grid{grid-template-columns:1fr;}
-    .record{grid-template-columns:1fr;}
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Test Form</title>
 </head>
 <body>
-<div class="wrap">
-  <h1>Lead Flow Sandbox</h1>
-  <p class="sub">web form → lead created → salesperson enriches → flow routes on ICP Tier</p>
 
-  <!-- STAGE 1: WEB FORM -->
-  <div class="stage active" id="stage1">
-    <div class="stage-label">Step 1 — Web Form</div>
-    <h2>Submit an inbound form</h2>
-    <div class="grid">
-      <div class="field"><label>First name</label><input type="text" id="firstName" placeholder="Jamie"></div>
-      <div class="field"><label>Last name</label><input type="text" id="lastName" placeholder="Rivera"></div>
-      <div class="field"><label>Work email</label><input type="email" id="workEmail" placeholder="jamie@acme.com"></div>
-      <div class="field"><label>Company</label><input type="text" id="company" placeholder="Acme Inc."></div>
-      <div class="field"><label>Phone</label><input type="tel" id="phone" placeholder="555-0100"></div>
-      <div class="field"><label>Lead source (hidden field)</label><input type="text" id="leadSource" value="Website - Contact Form"></div>
-      <div class="field full"><label>Description</label><textarea id="description" placeholder="What are they looking for?"></textarea></div>
-    </div>
-    <button id="submitForm">Submit form</button>
-    <p class="hint">Creates one Lead record, sets Salesforce's autoset fields, fires the auto-response email.</p>
-  </div>
+<h1>Lead Test Form</h1>
 
-  <div class="arrow">↓</div>
+<!--
+    BEFORE TESTING:
+    1. Replace YOUR_ORG_ID_HERE with your Salesforce Org ID.
+    2. This form uses Salesforce Web-to-Lead.
+    3. The hidden Lead Source is intentionally hardcoded to "Web".
+-->
 
-  <!-- STAGE 2: LEAD RECORD CREATED -->
-  <div class="stage" id="stage2">
-    <div class="stage-label">Lead object created</div>
-    <div class="lead-shell">
-      <div class="rec-title">Lead record — 1 per submission</div>
-      <div class="record">
-        <div class="record-block entered" id="enteredFields">—</div>
-        <div class="record-block auto" id="autoFields">—</div>
-      </div>
-    </div>
-  </div>
+<form action="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8"
+      method="POST">
 
-  <div class="arrow">↓</div>
+    <!-- Salesforce Org ID -->
+    <input type="hidden" name="oid" value="YOUR_ORG_ID_HERE">
 
-  <!-- STAGE 3: SALESPERSON ENRICHES -->
-  <div class="stage" id="stage3">
-    <div class="stage-label">Step 2 — Salesperson enriches lead</div>
-    <h2>Fill in what you learned about the company</h2>
-    <div class="grid">
-      <div class="field"><label>Title (job title)</label><input type="text" id="title" placeholder="VP Sales"></div>
-      <div class="field"><label>No. of employees</label><input type="number" id="employees" placeholder="250"></div>
-      <div class="field"><label>Annual revenue</label><input type="text" id="revenue" placeholder="$10M"></div>
-      <div class="field"><label>Industry</label><input type="text" id="industry" placeholder="Software"></div>
-      <div class="field"><label>Website</label><input type="text" id="website" placeholder="acme.com"></div>
-      <div class="field"><label>LinkedIn URL</label><input type="text" id="linkedin" placeholder="linkedin.com/company/acme"></div>
+    <!-- Hidden Lead Source: intentionally hardcoded for this test -->
+    <input type="hidden" name="lead_source" value="Web">
 
-      <div class="field"><label>Segment</label>
-        <select id="segment">
-          <option value="">— select —</option>
-          <option>SMB</option>
-          <option>Mid-Market</option>
-          <option>Enterprise</option>
-        </select>
-      </div>
-      <div class="field"><label>SE count (low–high)</label>
-        <div style="display:flex;gap:6px;">
-          <input type="number" id="seLow" placeholder="Low" style="width:100%;">
-          <input type="number" id="seHigh" placeholder="High" style="width:100%;">
-        </div>
-      </div>
-      <div class="checkrow"><input type="checkbox" id="sfNative"><label style="padding:0;">Salesforce native</label></div>
-      <div class="checkrow"><input type="checkbox" id="onAppExchange"><label style="padding:0;">On AppExchange</label></div>
-      <div class="checkrow"><input type="checkbox" id="hiringSEs"><label style="padding:0;">Hiring SEs</label></div>
+    <label for="first_name">First Name</label><br>
+    <input type="text" id="first_name" name="first_name"><br><br>
 
-      <div class="field"><label>ICP Tier</label>
-        <select id="icpTier">
-          <option value="">— manual assign —</option>
-          <option value="1">Tier 1</option>
-          <option value="2">Tier 2</option>
-          <option value="3">Tier 3</option>
-        </select>
-      </div>
-    </div>
-    <button id="saveEnrichment">Save enrichment</button>
-  </div>
+    <label for="last_name">Last Name</label><br>
+    <input type="text" id="last_name" name="last_name"><br><br>
 
-  <div class="arrow">↓</div>
+    <label for="email">Work Email</label><br>
+    <input type="email" id="email" name="email"><br><br>
 
-  <!-- STAGE 4: ENRICHED RECORD -->
-  <div class="stage" id="stage4">
-    <div class="stage-label">Same lead record — fields filled in</div>
-    <div class="lead-shell">
-      <div class="rec-title">Standard fields + custom ICP fields</div>
-      <div class="record">
-        <div class="record-block enriched" id="enrichedFields">—</div>
-        <div class="record-block icp" id="icpFields">—</div>
-      </div>
-    </div>
-  </div>
+    <label for="company">Company</label><br>
+    <input type="text" id="company" name="company"><br><br>
 
-  <div class="arrow">↓</div>
+    <label for="phone">Phone</label><br>
+    <input type="tel" id="phone" name="phone"><br><br>
 
-  <!-- STAGE 5: FLOW OUTCOME -->
-  <div class="stage" id="stage5">
-    <div class="stage-label">Flow fires on ICP Tier update</div>
-    <h2>Record-triggered flow — routes Owner + Status</h2>
-    <div class="tier-outcome t1" id="outcome1">
-      <div class="row"><span class="k">Owner</span><span>Tier 1 Queue</span></div>
-      <div class="row"><span class="k">Status</span><span>Tier 1 - New</span></div>
-    </div>
-    <div class="tier-outcome t2" id="outcome2">
-      <div class="row"><span class="k">Owner</span><span>Tier 2 Queue</span></div>
-      <div class="row"><span class="k">Status</span><span>Tier 2 - New</span></div>
-    </div>
-    <div class="tier-outcome t3" id="outcome3">
-      <div class="row"><span class="k">Owner</span><span>Tier 3 Queue</span></div>
-      <div class="row"><span class="k">Status</span><span>Tier 3 - New</span></div>
-    </div>
-    <p class="hint" id="waitingHint">Set ICP Tier above and save to see routing.</p>
-  </div>
+    <label for="state">State / Province</label><br>
+    <input type="text" id="state" name="state"><br><br>
 
-  <button class="reset" id="resetAll">Reset sandbox</button>
-</div>
+    <label for="description">Describe Your Current Discovery Pain</label><br>
+    <textarea id="description" name="description" rows="6" cols="50"></textarea><br><br>
 
-<script>
-const $ = id => document.getElementById(id);
-const now = () => new Date().toLocaleString();
+    <input type="submit" value="Submit">
 
-$('submitForm').addEventListener('click', () => {
-  const first = $('firstName').value || '(blank)';
-  const last = $('lastName').value || '(blank)';
-  const email = $('workEmail').value || '(blank)';
-  const company = $('company').value || '(blank)';
-  const phone = $('phone').value || '(blank)';
-  const desc = $('description').value || '(blank)';
-  const source = $('leadSource').value || '(blank)';
+</form>
 
-  $('enteredFields').innerHTML = `
-    <div class="k">— from the form —</div>
-    <div><b>${first} ${last}</b></div>
-    <div>${email}</div>
-    <div>${company}</div>
-    <div>${phone}</div>
-    <div>${desc}</div>
-  `;
-  $('autoFields').innerHTML = `
-    <div class="k">— autoset by SF —</div>
-    <div>Lead Source: ${source}</div>
-    <div>Lead Status: Web to Lead / Submitted</div>
-    <div>Owner: Inbound Queue</div>
-    <div>Created: ${now()}</div>
-    <div>→ auto-response email sent</div>
-  `;
-
-  $('stage1').classList.remove('active');
-  $('stage1').classList.add('done');
-  $('stage2').classList.add('active');
-  $('stage3').classList.add('active');
-  window.scrollTo({top: $('stage3').offsetTop - 20, behavior:'smooth'});
-});
-
-$('saveEnrichment').addEventListener('click', () => {
-  const title = $('title').value || '(blank)';
-  const employees = $('employees').value || '(blank)';
-  const revenue = $('revenue').value || '(blank)';
-  const industry = $('industry').value || '(blank)';
-  const website = $('website').value || '(blank)';
-  const linkedin = $('linkedin').value || '(blank)';
-  const segment = $('segment').value || '(unset)';
-  const seLow = $('seLow').value || '–';
-  const seHigh = $('seHigh').value || '–';
-  const sfNative = $('sfNative').checked ? 'Yes' : 'No';
-  const onAppExchange = $('onAppExchange').checked ? 'Yes' : 'No';
-  const hiringSEs = $('hiringSEs').checked ? 'Yes' : 'No';
-  const tier = $('icpTier').value;
-
-  $('enrichedFields').innerHTML = `
-    <div class="k">— standard fields —</div>
-    <div>Title: ${title}</div>
-    <div>Employees: ${employees}</div>
-    <div>Revenue: ${revenue}</div>
-    <div>Industry: ${industry}</div>
-    <div>Website: ${website}</div>
-    <div>LinkedIn: ${linkedin}</div>
-  `;
-  $('icpFields').innerHTML = `
-    <div class="k">— custom ICP fields —</div>
-    <div>Segment: ${segment}</div>
-    <div>SE count: ${seLow}–${seHigh}</div>
-    <div>SF Native: ${sfNative}</div>
-    <div>On AppExchange: ${onAppExchange}</div>
-    <div>Hiring SEs: ${hiringSEs}</div>
-    <div>ICP Tier: ${tier ? 'Tier ' + tier : '(unset)'}</div>
-  `;
-
-  $('stage3').classList.remove('active');
-  $('stage3').classList.add('done');
-  $('stage4').classList.add('active');
-  $('stage5').classList.add('active');
-
-  ['outcome1','outcome2','outcome3'].forEach(id => $(id).classList.remove('show'));
-  if (tier) {
-    $('waitingHint').style.display = 'none';
-    $('outcome' + tier).classList.add('show');
-  } else {
-    $('waitingHint').style.display = 'block';
-    $('waitingHint').textContent = 'ICP Tier is unset — flow has nothing to route on yet.';
-  }
-
-  window.scrollTo({top: $('stage5').offsetTop - 20, behavior:'smooth'});
-});
-
-$('resetAll').addEventListener('click', () => {
-  document.querySelectorAll('input[type=text], input[type=email], input[type=tel], input[type=number], textarea').forEach(el => {
-    if (el.id !== 'leadSource') el.value = '';
-  });
-  document.querySelectorAll('select').forEach(el => el.value = '');
-  document.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = false);
-  $('enteredFields').innerHTML = '—';
-  $('autoFields').innerHTML = '—';
-  $('enrichedFields').innerHTML = '—';
-  $('icpFields').innerHTML = '—';
-  ['outcome1','outcome2','outcome3'].forEach(id => $(id).classList.remove('show'));
-  $('waitingHint').style.display = 'block';
-  $('waitingHint').textContent = 'Set ICP Tier above and save to see routing.';
-  $('stage1').classList.add('active'); $('stage1').classList.remove('done');
-  ['stage2','stage3','stage4','stage5'].forEach(id => $(id).classList.remove('active','done'));
-  window.scrollTo({top:0, behavior:'smooth'});
-});
-</script>
 </body>
 </html>
